@@ -2,7 +2,7 @@
 A python CLI utility that can give you a random anime from a selected genre, you can then watch it straight from the terminal using `ani-cli`. Made using InquirerPy and the Jikan API to pull data from MyAnimeList.
 
 ## Demo
-![demo](demo.mp4)
+https://github.com/tsukki9696/magatama/assets/127806743/98ab56cd-4fcb-44ce-a12d-79697402e6c7
 
 ## Dependencies
 - Python 3.x 
