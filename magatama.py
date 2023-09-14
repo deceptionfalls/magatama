@@ -36,6 +36,7 @@ masterdict = {
 
 anime_set: dict[str, dict] = dict()
 
+
 def get_random_anime(genre_id):
     # Rate limits for the API
     requests_per_second = 2
@@ -65,6 +66,7 @@ def get_random_anime(genre_id):
     random_anime_title = random.choice(list(anime_set.keys()))
     return random_anime_title  # return the random anime so we can use it down in the main func
 
+
 def random_anime():
     # Initial prompt
     genre = inquirer.select(
@@ -76,12 +78,12 @@ def random_anime():
     genre_id = masterdict[genre]
 
     time.sleep(1)
-    os.system('clear')
+    os.system("clear")
     print("Fetching anime...")
 
     anime = get_random_anime(genre_id)
 
-    os.system('clear')
+    os.system("clear")
     print(
         f"You selected: \033[93m{genre}\033[0m. Your random anime is \033[91m{anime}\033[0m."  # Colored output
     )
@@ -95,5 +97,6 @@ def random_anime():
 
     if prompt == "Yes":
         subprocess.run(["ani-cli", anime])
+
 
 random_anime()
