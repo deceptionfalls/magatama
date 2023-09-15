@@ -25,12 +25,13 @@ masterdict = {
 }
 
 anime_set: dict[str, dict] = dict()
-manga_set: dict[str, dict] = dict()
+manga_set = anime_set
 
-def get_random_anime(genre_id):
+def get_random_animanga(media_type, genre_id):
     # Rate limits for the API
     requests_per_second = 2
     start_time = time.time()
+    media_set = {}
 
     # This is a hack, since Jikan doesn't allow us to random search based on genre
     # we have to submit an empty query with a specified genre -- the genre_id parameter,
@@ -45,39 +46,17 @@ def get_random_anime(genre_id):
             time.sleep(1.0 / requests_per_second - elapsed_time)
 
         response = api.search(
-            search_type="anime", query="", page=i + 1, parameters={"genres": genre_id}
+            search_type=media_type, query="", page=i + 1, parameters={"genres": genre_id}
         )
 
         start_time = time.time()
 
-        for anime in response["data"]:
-            anime_set[anime["title"]] = anime
+        for media in response["data"]:
+            media_set[media["title"]] = media
 
-    random_anime_title = random.choice(list(anime_set.keys()))
-    return random_anime_title # return the random anime so we can use it down in the main func
+    random_media_title = random.choice(list(media_set.keys()))
+    return random_media_title # return the random anime so we can use it down in the main func
     
-
-def get_random_manga(genre_id):
-    requests_per_second = 2
-    start_time = time.time()
-
-    for i in range(10):
-        elapsed_time = time.time() - start_time
-
-        if elapsed_time < 1.0 / requests_per_second:
-            time.sleep(1.0 / requests_per_second - elapsed_time)
-
-        response = api.search(
-            search_type="manga", query="", page=i + 1, parameters={"genres": genre_id}
-        )
-
-        start_time = time.time()
-
-        for manga in response["data"]:
-            manga_set[manga["title"]] = manga
-
-    random_manga_title = random.choice(list(manga_set.keys()))
-    return random_manga_title
 
 def random_animanga():
     # Initial prompts
@@ -91,41 +70,37 @@ def random_animanga():
     os.system("clear")
 
     if choice == "Anime":
+        media_type = "anime"
         print("Fetching anime...")
-        anime = get_random_anime(genre_id)
-        os.system("clear")
+    else:
+        media_type = "manga"
+        print("Fetching manga...")
+    
+    media = get_random_animanga(media_type, genre_id)
+    os.system("clear")
 
-        print(
-            f"You selected: \033[93m{genre}\033[0m.\nYour random anime is \033[91m{anime}\033[0m."  # Colored output
-        )
+    print(
+        f"You selected: \033[93m{genre}\033[0m.\nYour random {media_type} is \033[91m{media}\033[0m."  # Colored output
+    )
 
-        time.sleep(1)
+    time.sleep(1)
 
+    if choice == "Anime":
         prompt = inquirer.select(
             message="Want to watch it? (Requires ani-cli)",
             choices=["Yes", "No"],
         ).execute()
 
         if prompt == "Yes":
-            subprocess.run(["ani-cli", anime])
+            subprocess.run(["ani-cli", media])
     else:
-        print("Fetching manga...")
-        manga = get_random_manga(genre_id)
-        os.system("clear")
-
-        print(
-            f"You selected: \033[93m{genre}\033[0m.\nYour random manga is \033[91m{manga}\033[0m."  # Colored output
-        )
-
-        time.sleep(1)
-
         prompt = inquirer.select(
             message="Want to read it on Mangadex?",
             choices=["Yes", "No"],
         ).execute()
 
         if prompt == "Yes":
-            pyperclip.copy(f"https://mangadex.org/search?q={manga}")
+            pyperclip.copy(f"https://mangadex.org/search?q={media}")
             print("\033[93mLink copied to your clipboard!\033[0m")
 
 random_animanga()
