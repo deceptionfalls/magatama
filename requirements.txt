@@ -1,3 +1,3 @@
 inquirerpy
 jikanpy-v4
-ani-cli
+clipboard
