@@ -11,9 +11,11 @@ https://github.com/tsukki9696/magatama/assets/127806743/98ab56cd-4fcb-44ce-a12d-
 - [ani-cli](https://github.com/pystardust/ani-cli) 4.6 (optional)
 
 ## Installation
-After you get all the dependencies figured out, simply clone this repository
+Clone this repository, then download the dependencies.
 ```
 git clone https://github.com/tsukki9696/magatama.git
+cd magatama/
+pip install -r requirements.txt
 ```
 
 **TODO**: Package script to PyPI and the AUR.
