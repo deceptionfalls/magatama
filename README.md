@@ -19,7 +19,7 @@ cd magatama/
 pip install -r requirements.txt
 ```
 
-**TODO**: Package script to PyPI and the AUR.
+**TODO**: Package script to the AUR.
 
 ## Usage
 ```
