@@ -2,40 +2,30 @@ import time
 import subprocess
 import os
 import random
+import pyperclip
 from InquirerPy import inquirer
 from jikanpy import Jikan
 
 api = Jikan()
 
 # Genre IDs from Jikan
-SHOUNEN_ID = 27
-SEINEN_ID = 42
-COMEDY_ID = 4
-HORROR_ID = 14
-SPORTS_ID = 30
-DRAMA_ID = 8
-ROMANCE_ID = 22
-FANTASY_ID = 10
-SCI_FI_ID = 24
-MECHA_ID = 18
-
 # Master dictionary, this is so we can have our selected genre's
 # name appear in InquirerPy when we use it later down in the prompts
 masterdict = {
-    "Shounen": SHOUNEN_ID,
-    "Fantasy": FANTASY_ID,
-    "Drama": DRAMA_ID,
-    "Sci-fi": SCI_FI_ID,
-    "Romance": ROMANCE_ID,
-    "Comedy": COMEDY_ID,
-    "Seinen": SEINEN_ID,
-    "Horror": HORROR_ID,
-    "Sports": SPORTS_ID,
-    "Mecha": MECHA_ID,
+    "Shounen": 27,
+    "Fantasy": 10,
+    "Drama": 8,
+    "Sci-fi": 24,
+    "Romance": 22,
+    "Comedy": 4,
+    "Seinen": 42,
+    "Horror": 14,
+    "Sports": 30,
+    "Mecha": 18,
 }
 
 anime_set: dict[str, dict] = dict()
-
+manga_set: dict[str, dict] = dict()
 
 def get_random_anime(genre_id):
     # Rate limits for the API
@@ -64,39 +54,78 @@ def get_random_anime(genre_id):
             anime_set[anime["title"]] = anime
 
     random_anime_title = random.choice(list(anime_set.keys()))
-    return random_anime_title  # return the random anime so we can use it down in the main func
+    return random_anime_title # return the random anime so we can use it down in the main func
+    
 
+def get_random_manga(genre_id):
+    requests_per_second = 2
+    start_time = time.time()
 
-def random_anime():
-    # Initial prompt
-    genre = inquirer.select(
-        message="Choose a genre: ",
-        choices=[item for item in masterdict],
-    ).execute()
+    for i in range(10):
+        elapsed_time = time.time() - start_time
 
-    # Selected genre is used as a parameter for our query
-    genre_id = masterdict[genre]
+        if elapsed_time < 1.0 / requests_per_second:
+            time.sleep(1.0 / requests_per_second - elapsed_time)
+
+        response = api.search(
+            search_type="manga", query="", page=i + 1, parameters={"genres": genre_id}
+        )
+
+        start_time = time.time()
+
+        for manga in response["data"]:
+            manga_set[manga["title"]] = manga
+
+    random_manga_title = random.choice(list(manga_set.keys()))
+    return random_manga_title
+
+def random_animanga():
+    # Initial prompts
+    choice = inquirer.select(message="Select one: ", choices=["Anime", "Manga"]).execute()
+    os.system("clear")
+    genre = inquirer.select(message="Choose a genre: ", choices=[item for item in masterdict]).execute()
+
+    genre_id = masterdict[genre] # Selected genre is used as a parameter for our query
 
     time.sleep(1)
     os.system("clear")
-    print("Fetching anime...")
 
-    anime = get_random_anime(genre_id)
+    if choice == "Anime":
+        print("Fetching anime...")
+        anime = get_random_anime(genre_id)
+        os.system("clear")
 
-    os.system("clear")
-    print(
-        f"You selected: \033[93m{genre}\033[0m. Your random anime is \033[91m{anime}\033[0m."  # Colored output
-    )
+        print(
+            f"You selected: \033[93m{genre}\033[0m.\nYour random anime is \033[91m{anime}\033[0m."  # Colored output
+        )
 
-    time.sleep(1)
+        time.sleep(1)
 
-    prompt = inquirer.select(
-        message="Want to watch it? (Requires ani-cli)",
-        choices=["Yes", "No"],
-    ).execute()
+        prompt = inquirer.select(
+            message="Want to watch it? (Requires ani-cli)",
+            choices=["Yes", "No"],
+        ).execute()
 
-    if prompt == "Yes":
-        subprocess.run(["ani-cli", anime])
+        if prompt == "Yes":
+            subprocess.run(["ani-cli", anime])
+    else:
+        print("Fetching manga...")
+        manga = get_random_manga(genre_id)
+        os.system("clear")
 
+        print(
+            f"You selected: \033[93m{genre}\033[0m.\nYour random manga is \033[91m{manga}\033[0m."  # Colored output
+        )
 
-random_anime()
+        time.sleep(1)
+
+        prompt = inquirer.select(
+            message="Want to read it on Mangadex?",
+            choices=["Yes", "No"],
+        ).execute()
+
+        if prompt == "Yes":
+            pyperclip.copy(f"https://mangadex.org/search?q={manga}")
+            print("\033[93mLink copied to your clipboard!\033[0m")
+
+random_animanga()
